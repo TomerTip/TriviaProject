@@ -15,10 +15,14 @@
 #include <iostream>
 
 #include "Helper.h"
+#include "RecievedMessage.h"
+#include "Protocol.h"
 
 #pragma comment(lib, "ws2_32.lib")
 using namespace std;
 
+
+/***********/
 class TriviaServer
 {
 public:
@@ -57,7 +61,7 @@ private:
 	void addRecievedMessage(RecievedMessage* m);
 	RecievedMessage* buildRecieveMessage(SOCKET s, int num);
 
-	User* getUserByName();
+	User* getUserByName(string name);
 	User* getUserBySocket(SOCKET s);
 	Room* getRoomById(int id);
 
@@ -66,10 +70,11 @@ private:
 	SOCKET _socket;
 	map<SOCKET, User*> _connectedUsers;
 	map<int, Room*> _roomsList;
-	DataBase _db;
+	//DataBase _db;
 
 	queue<RecievedMessage*> _queRcvMessages;
 	mutex _mtxRecievedMessages;
+	condition_variable _cv;
 
 	static int _roomIdSequence;
 

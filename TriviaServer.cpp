@@ -16,9 +16,11 @@ void TriviaServer::bindAndListen()
 
 	int connection;
 	connection = ::bind(_socket, (struct sockaddr*) &serverService, sizeof(serverService)); //binds the socket with the propreties above. Ready to use.
+	cout << ">> Binded." << endl;
 
 	listen(_socket, 20); //supports 20 users.
-	
+	cout << ">> Listening. (Port = 8820)" << endl;
+
 	accept();
 }
 
@@ -30,8 +32,11 @@ void TriviaServer::accept()
 	int c = sizeof(struct sockaddr_in);
 
 	client_sock = _WINSOCK2API_::accept(this->_socket, (struct sockaddr*)&client, &c); //create connections with the clients.
+	cout << "Accepting Clients." << endl;
+
 	if (client_sock != INVALID_SOCKET)
 	{
+		cout << endl << "Accepted client on port = " << ntohs(client.sin_port) << endl;
 		std::thread t(&TriviaServer::clientHandler, this, client_sock); //creates a thread - for handling client.
 		t.detach(); //works independently.
 	}
@@ -43,20 +48,129 @@ void TriviaServer::accept()
 }
 
 void TriviaServer::clientHandler(SOCKET s)
+{	
+
+	int code;
+	RecievedMessage* rm;
+
+	try
+	{
+		while (((code = Helper::getMessageTypeCode(s)) != END) || ((code = Helper::getMessageTypeCode(s)) != 0))
+		{
+			rm = buildRecieveMessage(s, code); //inserts the new message to the queue.
+		}
+
+		rm = buildRecieveMessage(s, END); //creates end connection message, ends thread.
+	}
+	
+	catch (...)
+	{
+		rm = buildRecieveMessage(s, END); //creates end connection message, ends thread.
+	}
+
+}
+
+void TriviaServer::handleRecievedMessages()
 {
-	char* buff;
-	recv(s, buff, , 0);
+	unique_lock<std::mutex> ul(this->_mtxRecievedMessages, defer_lock);
+
+	if (!this->_queRcvMessages.empty())
+	{
+
+	}
+	else
+	{
+		this->_cv.wait(ul);
+	}
+
+
+	this->_mtxRecievedMessages.lock();
+
+	RecievedMessage* rm = this->_queRcvMessages.back();
+	this->_queRcvMessages.pop();
+
+	this->_mtxRecievedMessages.unlock();
+
+	rm->getSock();
+
+
 
 
 }
 
 void TriviaServer::safeDeleteUser(RecievedMessage* m)
 {
-	
+
+	map<SOCKET, User*>::iterator it;
+	for (it = this->_connectedUsers.begin(); it != this->_connectedUsers.end(); it++)
+	{
+		if (it->second == m->getUser()) {
+			this->_connectedUsers.erase(it->first);
+		}
+	}
+
 }
 
-/*
-User* TriviaServer::handleSignin(RecievedMessage* m);
+void TriviaServer::addRecievedMessage(RecievedMessage* m)
+{
+	this->_queRcvMessages.push(m);
+}
+
+RecievedMessage* TriviaServer::buildRecieveMessage(SOCKET s, int num)
+{
+	//builds a receivedMessage.
+	RecievedMessage* m = new RecievedMessage(s, num);
+	addRecievedMessage(m);
+
+	return m;
+}
+
+User* TriviaServer::getUserByName(string name)
+{
+	map<SOCKET, User*>::iterator it;
+	for (it = this->_connectedUsers.begin(); it != this->_connectedUsers.end(); it++)
+	{
+		if (it->second->get_user_name() == name) {
+			return it->second;
+		}
+	}
+
+	return nullptr;
+}
+
+User* TriviaServer::getUserBySocket(SOCKET s)
+{
+	try
+	{
+		return this->_connectedUsers.at(s);
+	}
+	
+	catch (...)
+	{
+		return nullptr;
+	}
+
+}
+
+Room* TriviaServer::getRoomById(int id)
+{
+	try
+	{
+		return this->_roomsList.at(id);
+	}
+
+	catch (...)
+	{
+		return nullptr;
+	}
+}
+
+
+User* TriviaServer::handleSignin(RecievedMessage* m)
+{
+	m->getValues
+}
+
 bool TriviaServer::handleSignup(RecievedMessage* m);
 void TriviaServer::handleSignout(RecievedMessage* m);
 
@@ -78,7 +192,4 @@ void TriviaServer::handleRecievedMessages();
 void TriviaServer::addRecievedMessage(RecievedMessage* m);
 RecievedMessage* TriviaServer::buildRecieveMessage(SOCKET s, int num);
 
-User* TriviaServer::getUserByName();
-User* TriviaServer::getUserBySocket(SOCKET s);
-Room* TriviaServer::getRoomById(int id);
 */
