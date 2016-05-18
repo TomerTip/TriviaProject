@@ -21,6 +21,7 @@
 #pragma comment(lib, "ws2_32.lib")
 using namespace std;
 
+#define MAX_LENGTH 1024
 
 /***********/
 class TriviaServer
