@@ -1,6 +1,8 @@
 #include "User.h"
 #include "Helper.h"
 #include "Room.h"
+#include "Game.h"
+#include "Protocol.h"
 using namespace std;
 
 
@@ -21,6 +23,9 @@ SOCKET User::get_sock(){
 	return _sock;
 }
 
+string User::get_user_name() {
+	return _username;
+}
 void User::set_game(Game * gm){
 	_currRoom = nullptr;
 	_currGame = gm;
@@ -31,16 +36,17 @@ void  User::send(string str){
 }
 
 void User::clear_room(){
-	_currGame = nullptr;
+	if(_currRoom)
+		_currRoom = nullptr;
 }
 
 bool User::create_room(int room_id, string room_name, int max_users, int question_num, int question_time){
 	if (_currRoom){
-		send("1141");
+		send(RES_CREATE_ROOM_FAIL);
 		return false;
 	}
 	Room * room = new Room(room_id, this, room_name, max_users, question_num, question_time);
-	send("1140");
+	send(RES_CREATE_ROOM);
 	return true;
 }
 
