@@ -6,7 +6,8 @@
 using namespace std;
 
 
-User::User(string name, SOCKET sock){
+User::User(string name, SOCKET sock)
+{
 	_username = name;
 	_sock = sock;
 }

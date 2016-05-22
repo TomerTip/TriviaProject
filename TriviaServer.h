@@ -14,9 +14,9 @@
 #include <condition_variable>
 #include <iostream>
 
-#include "Helper.h"
+#include "User.h"
+#include "Room.h"
 #include "RecievedMessage.h"
-#include "Protocol.h"
 
 #pragma comment(lib, "ws2_32.lib")
 using namespace std;

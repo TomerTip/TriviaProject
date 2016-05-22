@@ -1,15 +1,12 @@
 #include <string>
-#include <thread>
-#include <fstream>
-#include <iostream>
 #include <vector>
-#include <math.h>
-#include <iomanip>
-#include <sstream>
-#include <WinSock2.h>
-#include "Game.h"
-using namespace std;
 
+#pragma once
+#include "Game.h"
+#pragma once
+#include "Room.h"
+
+using namespace std;
 
 class User{
 private:

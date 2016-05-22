@@ -1,14 +1,4 @@
 #include <string>
-#include <thread>
-#include <fstream>
-#include <iostream>
-#include <vector>
-#include <math.h>
-#include <winsock2.h>
-#include <map>
-#include <thread>
-#include <mutex>
-#include <queue>
 
 using namespace std;
 

@@ -1,8 +1,5 @@
 #include "Room.h"
-#include "User.h"
-#include "Helper.h"
-#include "Protocol.h"
-using namespace std;
+
 
 Room::Room(int id, User* admin, string name, int max_users, int question_num, int question_time){
 	_admin = admin;
@@ -26,7 +23,8 @@ string Room::get_users_as_string(vector<User*> user_list, User* excluded_user){
 bool Room::join_room(User* user){
 	string str;
 	string str2;
-	if (_users.size < _max_users){
+
+	if (_users.size() < _max_users){
 		_users.push_back(user);
 		str.append(RES_JOIN_ROOM);
 		str.append(Helper::getPaddedNumber(_num_of_question, 2));
@@ -44,7 +42,10 @@ bool Room::join_room(User* user){
 
 void Room::leave_room(User* user){
 	string str;
-	for (vector<User*>::iterator it = _users.begin(),int i =0; it != _users.end(); ++it,i++){
+	for (vector<User*>::iterator it = _users.begin(); it != _users.end(); it++){
+		int i = 0;
+		i++;
+
 		if (user == *it){
 			_users.erase(_users.begin() + i);
 		}
@@ -82,7 +83,7 @@ string Room::get_users_messages_list(){
 		return str;
 	}
 	else{
-		return RES_USERS_LIST_FAIL;
+		return RES_USERS_LIST_NOT_EXIST;
 	}
 }
 int Room::get_id(){

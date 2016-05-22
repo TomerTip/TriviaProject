@@ -1,5 +1,5 @@
 #include "TriviaServer.h"
-#using namespace std;
+
 /*Creates a socket for server listening, binds and listens*/
 void TriviaServer::bindAndListen()
 {
@@ -213,7 +213,6 @@ Room* TriviaServer::getRoomById(int id)
 	}
 }
 
-
 void TriviaServer::safeDeleteUser(RecievedMessage* m)
 {
 	try
@@ -234,29 +233,29 @@ User* TriviaServer::handleSignin(RecievedMessage* m)
 
 	//Checks if the username and password are in the database:
 
-	/*
-	if (DataBase::isUserAndPassMatch(username,password))
+	
+	if (/*DataBase::is_user_and_pass_match(username,password)*/ true)
 	{
 		if (this->getUserByName(username))
 		{
 			User* user = new User(username, m->getSock());
 			this->_connectedUsers[m->getSock()] = user; //adds the user to the connected users.
 
-			Helper::sendData(m->getSock(), to_string(RES_SIGN_IN) + "0"); //sends 1020 to client, "Success".
+			Helper::sendData(m->getSock(), RES_SIGN_IN_SUCCESS); //sends 1020 to client, "Success".
 			return user;
 		}
 		else
 		{
-			Helper::sendData(m->getSock(), to_string(RES_SIGN_IN) + "2"); //sends 1022 to client, "User is already connected".
+			Helper::sendData(m->getSock(), RES_SIGN_IN_ALREADY); //sends 1022 to client, "User is already connected".
 			return nullptr;
 		}
 	}
 	else
 	{
-		Helper::sendData(m->getSock(), to_string(RES_SIGN_IN) + "1"); //sends 1021 to client, "Wrong Details".
+		Helper::sendData(m->getSock(), RES_SIGN_IN_WRONG); //sends 1021 to client, "Wrong Details".
 		return nullptr;
 	}
-	*/
+	
 }
 
 bool TriviaServer::handleSignup(RecievedMessage* m)
@@ -265,48 +264,53 @@ bool TriviaServer::handleSignup(RecievedMessage* m)
 	string password = m->getValues()[1];
 	string email = m->getValues()[2];
 
+	
 	try
 	{
-		if (Validator::isPasswordValid(password))
+		if (Validator::is_pass_valid(password))
 		{
-			if (Validator::isUsernameValid(username))
+			if (Validator::is_username_valid(username))
 			{
+				/*
 				if (!DataBase::isUserExists(username))
 				{
 					bool success = DataBase::addNewUser(username, password, email);
 					if (success)
 					{
-						Helper::sendData(m->getSock(), to_string(RES_SIGN_UP) + "0"); //sends 1040 to client, "success".
+						Helper::sendData(m->getSock(), RES_SIGN_UP_SUCCESS); //sends 1040 to client, "success".
 						return true;
 					}
 					else
 					{
-						Helper::sendData(m->getSock(), to_string(RES_SIGN_UP) + "4"); //sends 1044 to client, "other".
+						Helper::sendData(m->getSock(), RES_SIGN_UP_OTHER); //sends 1044 to client, "other".
 						return false;
 					}
 				}
+				
 				else
 				{
-					Helper::sendData(m->getSock(), to_string(RES_SIGN_UP) + "3"); //sends 1043 to client, "Username is illegal".
+					Helper::sendData(m->getSock(), RES_SIGN_UP_USER_ILLEAL); //sends 1043 to client, "Username is illegal".
 					return false;
 				}
+				*/
+				
 			}
 			else
 			{
-				Helper::sendData(m->getSock(), to_string(RES_SIGN_UP) + "2"); //sends 1042 to client, "Username alreay exists.".
+				Helper::sendData(m->getSock(), RES_SIGN_UP_USER_ALREADY); //sends 1042 to client, "Username alreay exists.".
 				return false;
 			}
 		}
 		else
 		{
-			Helper::sendData(m->getSock(), to_string(RES_SIGN_UP) + "1"); //sends 1041 to client, "password is illegal".
+			Helper::sendData(m->getSock(), RES_SIGN_UP_PASS); //sends 1041 to client, "password is illegal".
 			return false;
 		}
 	}
 	
 	catch (...)
 	{
-		Helper::sendData(m->getSock(), to_string(RES_SIGN_UP) + "4"); //sends 1044 to client, "other".
+		Helper::sendData(m->getSock(), RES_SIGN_UP_OTHER); //sends 1044 to client, "other".
 		return false;
 	}			
 }				
@@ -338,7 +342,6 @@ void TriviaServer::handlePlayerAnswer(RecievedMessage* m)
 {
 
 }
-
 bool TriviaServer::handleCreateRoom(RecievedMessage* m)
 {
 
@@ -363,7 +366,6 @@ void TriviaServer::handleGetRooms(RecievedMessage* m)
 {
 
 }
-
 void TriviaServer::handleGetBestScores(RecievedMessage* m)
 {
 

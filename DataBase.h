@@ -1,25 +1,18 @@
 #include <string>
-#include <thread>
-#include <fstream>
 #include <iostream>
 #include<vector>
-#include <math.h>
-#include <iomanip>
-#include <sstream>
-#include "Question.h"
-#include "sqlite3.h"
+
 
 using namespace std;
 
+#include "Question.h"
 
 class DataBase
 {
 public:
 	DataBase();
 	~DataBase();
-	bool is_user_exsits(string){
-
-	}
+	bool is_user_exsits(string);
 	bool add_new_user(string, string, string);
 	bool is_user_and_pass_match(string, string);
 	vector<Question*> init_question(int);

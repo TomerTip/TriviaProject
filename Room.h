@@ -1,22 +1,19 @@
 #include <string>
-#include <thread>
-#include <fstream>
-#include <iostream>
 #include <vector>
-#include <math.h>
-#include <winsock2.h>
 #include <map>
-#include <thread>
-#include <mutex>
-#include <queue>
-#include "User.h"
-using namespace std;
 
+#include "Helper.h"
+#include "Protocol.h"
+
+#pragma once
+#include "User.h"
+
+using namespace std;
 
 class Room{
 private:
 	vector<User*> _users;
-	User * _admin;
+	User* _admin;
 	int _max_users;
 	int _num_of_question;
 	int _time_for_question;
