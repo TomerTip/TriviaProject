@@ -1,12 +1,9 @@
+#pragma once
+
 #include <string>
-#include <thread>
-#include <fstream>
-#include <iostream>
 #include <vector>
-#include <math.h>
-#include <iomanip>
-#include <sstream>
-#include <WinSock2.h>
+
+#include "Room.h"
 #include "Game.h"
 using namespace std;
 

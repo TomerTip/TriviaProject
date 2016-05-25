@@ -1,11 +1,5 @@
 #include <string>
-#include <thread>
-#include <fstream>
-#include <iostream>
 #include<vector>
-#include <math.h>
-#include <iomanip>
-#include <sstream>
 #include <WS2tcpip.h>
 #include<WinSock2.h>
 #include<Windows.h>

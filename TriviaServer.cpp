@@ -1,5 +1,9 @@
 #include "TriviaServer.h"
-#using namespace std;
+#include "Validator.h"
+#include "DataBase.h"
+#include "Protocol.h"
+using namespace std;
+
 /*Creates a socket for server listening, binds and listens*/
 void TriviaServer::bindAndListen()
 {
@@ -267,46 +271,46 @@ bool TriviaServer::handleSignup(RecievedMessage* m)
 
 	try
 	{
-		if (Validator::isPasswordValid(password))
+		if (Validator::is_pass_valid(password))
 		{
-			if (Validator::isUsernameValid(username))
+			if (Validator::is_username_valid(username))
 			{
-				if (!DataBase::isUserExists(username))
+				if (!DataBase::is_user_exsits(username))
 				{
-					bool success = DataBase::addNewUser(username, password, email);
+					bool success = DataBase::add_new_user(username, password, email);
 					if (success)
 					{
-						Helper::sendData(m->getSock(), to_string(RES_SIGN_UP) + "0"); //sends 1040 to client, "success".
+						Helper::sendData(m->getSock(),RES_SIGN_UP_SUC); //sends 1040 to client, "success".
 						return true;
 					}
 					else
 					{
-						Helper::sendData(m->getSock(), to_string(RES_SIGN_UP) + "4"); //sends 1044 to client, "other".
+						Helper::sendData(m->getSock(),RES_SIGN_UP_FAIL); //sends 1044 to client, "other".
 						return false;
 					}
 				}
 				else
 				{
-					Helper::sendData(m->getSock(), to_string(RES_SIGN_UP) + "3"); //sends 1043 to client, "Username is illegal".
+					Helper::sendData(m->getSock(), RES_SIGN_UP_USERNAME_FAIL); //sends 1043 to client, "Username is illegal".
 					return false;
 				}
 			}
 			else
 			{
-				Helper::sendData(m->getSock(), to_string(RES_SIGN_UP) + "2"); //sends 1042 to client, "Username alreay exists.".
+				Helper::sendData(m->getSock(), RES_SIGN_UP_USERNAME_EXIST); //sends 1042 to client, "Username alreay exists.".
 				return false;
 			}
 		}
 		else
 		{
-			Helper::sendData(m->getSock(), to_string(RES_SIGN_UP) + "1"); //sends 1041 to client, "password is illegal".
+			Helper::sendData(m->getSock(), RES_SIGN_UP_PASS_FAIL); //sends 1041 to client, "password is illegal".
 			return false;
 		}
 	}
 	
 	catch (...)
 	{
-		Helper::sendData(m->getSock(), to_string(RES_SIGN_UP) + "4"); //sends 1044 to client, "other".
+		Helper::sendData(m->getSock(),RES_SIGN_UP_FAIL); //sends 1044 to client, "other".
 		return false;
 	}			
 }				

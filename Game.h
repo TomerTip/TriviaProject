@@ -1,15 +1,10 @@
+#pragma once
+
 #include <string>
-#include <thread>
-#include <fstream>
-#include <iostream>
 #include <vector>
-#include <math.h>
-#include <winsock2.h>
 #include <map>
-#include <thread>
-#include <mutex>
-#include <queue>
 #include "Question.h"
+#include "DataBase.h"
 using namespace std;
 
 class Game{

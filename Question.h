@@ -1,11 +1,6 @@
-#include <string>
-#include <thread>
-#include <fstream>
-#include <iostream>
 #include<vector>
-#include <math.h>
-#include <iomanip>
-#include <sstream>
+#include <string>
+
 using namespace std;
 
 

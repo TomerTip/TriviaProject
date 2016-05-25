@@ -1,4 +1,5 @@
 #include "Question.h"
+#include <time.h>
 
 Question::Question(int id, string question, string right_ans, string ans2, string ans3, string ans4)
 {

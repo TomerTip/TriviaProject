@@ -18,7 +18,11 @@
 
 //Server side:
 #define RES_SIGN_OUT "102"
-#define RES_SIGN_UP "104"
+#define RES_SIGN_UP_SUC "1040"
+#define RES_SIGN_UP_FAIL "1044"
+#define RES_SIGN_UP_USERNAME_FAIL "1043"
+#define RES_SIGN_UP_PASS_FAIL "1041"
+#define RES_SIGN_UP_USERNAME_EXIST "1042"
 #define RES_ROOMS_LIST "106"
 #define RES_USERS_LIST "108"
 #define RES_USERS_LIST_FAIL "1080"

@@ -21,13 +21,6 @@ int Helper::getMessageTypeCode(SOCKET sc)
 	return  res;
 }
 
-
-
-
-
-
-
-
 // send data to socket
 // this is private function
 void Helper::sendData(SOCKET sc, std::string message)
