@@ -1,14 +1,4 @@
 #include <string>
-#include <thread>
-#include <fstream>
-#include <iostream>
-#include <vector>
-#include <math.h>
-#include <winsock2.h>
-#include <map>
-#include <thread>
-#include <mutex>
-#include <queue>
 
 using namespace std;
 
@@ -18,7 +8,7 @@ public:
 		if (str.length() == 0){
 			return false;
 		}
-		for (int i = 0; i < str.length(); i++){
+		for (size_t i = 0; i < str.length(); i++){
 			if (str[i] == ' ')
 			{
 				return false;
@@ -36,7 +26,7 @@ public:
 		if (str.length() < 0){
 			return false;
 		}
-		for (int i = 0; i < str.length(); i++){
+		for (size_t i = 0; i < str.length(); i++){
 			if (str[i] == ' ')
 			{
 				return false;

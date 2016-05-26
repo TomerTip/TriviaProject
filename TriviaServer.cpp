@@ -1,6 +1,5 @@
 #include "TriviaServer.h"
 #include "Validator.h"
-#include "DataBase.h"
 #include "Protocol.h"
 using namespace std;
 
@@ -275,9 +274,9 @@ bool TriviaServer::handleSignup(RecievedMessage* m)
 		{
 			if (Validator::is_username_valid(username))
 			{
-				if (!DataBase::is_user_exsits(username))
+				if (1/*!DataBase::is_user_exsits(username))*/)
 				{
-					bool success = DataBase::add_new_user(username, password, email);
+					bool success = true;//DataBase::add_new_user(username, password, email);
 					if (success)
 					{
 						Helper::sendData(m->getSock(),RES_SIGN_UP_SUC); //sends 1040 to client, "success".

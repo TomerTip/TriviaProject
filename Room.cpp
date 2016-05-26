@@ -4,14 +4,6 @@
 #include "Protocol.h"
 using namespace std;
 
-Room::Room(int id, User* admin, string name, int max_users, int question_num, int question_time){
-	_admin = admin;
-	_name = name;
-	_id = id;
-	_max_users = max_users;
-	_time_for_question = question_time;
-	_num_of_question = question_num;
-}
 
 string Room::get_users_as_string(vector<User*> user_list, User* excluded_user){
 	string str;
@@ -26,7 +18,7 @@ string Room::get_users_as_string(vector<User*> user_list, User* excluded_user){
 bool Room::join_room(User* user){
 	string str;
 	string str2;
-	if (_users.size < _max_users){
+	if (_users.size() < (unsigned int)_max_users){
 		_users.push_back(user);
 		str.append(RES_JOIN_ROOM);
 		str.append(Helper::getPaddedNumber(_num_of_question, 2));
@@ -34,6 +26,7 @@ bool Room::join_room(User* user){
 		(*user).send(str);
 		str2 = get_users_messages_list();
 		sendMessage(str2);
+		return true;
 	}
 	else{
 		(*user).send(RES_JOIN_ROOM_FAIL);
@@ -44,7 +37,8 @@ bool Room::join_room(User* user){
 
 void Room::leave_room(User* user){
 	string str;
-	for (vector<User*>::iterator it = _users.begin(),int i =0; it != _users.end(); ++it,i++){
+	int i = 0;
+	for (vector<User*>::iterator it = _users.begin(); it != _users.end(); ++it, i++) {
 		if (user == *it){
 			_users.erase(_users.begin() + i);
 		}
@@ -61,6 +55,7 @@ int Room::close_room(User* user){
 		if(*it != _admin)
 			(*it)->clear_room();
 	}
+	return 1;
 }
 vector<User*> Room::get_users(){
 	return _users;
