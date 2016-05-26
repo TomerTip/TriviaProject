@@ -63,16 +63,14 @@ void User::leave_room(){
 }
 
 int User::close_room(){
-	if (_currRoom) {
-		if (_currRoom->close_room(this) == 1) {
+	if (_currRoom) 
+		if (_currRoom->close_room(this) == 1) 
 			_currRoom = nullptr;
-		}
-	}
-	else {
-		return -1;
-	}
+	return -1;
 }
 
-/*bool User::leave_game(){
+/*
+bool User::leave_game(){
 	
-}*/
+}
+*/

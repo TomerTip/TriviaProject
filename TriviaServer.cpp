@@ -32,7 +32,6 @@ void TriviaServer::bindAndListen()
 	{
 		accept();
 	}
-	
 }
 
 /*Accepting clients and opens a thread for each one of them.*/
@@ -63,7 +62,6 @@ void TriviaServer::accept()
 
 void TriviaServer::clientHandler(SOCKET s)
 {	
-
 	int code;
 	RecievedMessage* rm;
 
@@ -83,6 +81,7 @@ void TriviaServer::clientHandler(SOCKET s)
 		rm = buildRecieveMessage(s, END); 
 	}
 }
+
 
 void TriviaServer::handleRecievedMessages()
 {
@@ -117,37 +116,37 @@ void TriviaServer::handleRecievedMessages()
 		handleSignup(rm);
 		break;
 	case ROOMS_LIST:
-		handleGetRooms(rm);
+		//handleGetRooms(rm);
 		break;
 	case USERS_LIST:
-		handleGetUsersInRoom(rm);
+		//handleGetUsersInRoom(rm);
 		break;
 	case JOIN_ROOM:
-		handleJoinRoom(rm);
+		//handleJoinRoom(rm);
 		break;
 	case LEAVE_ROOM:
-		handleLeaveRoom(rm);
+		//handleLeaveRoom(rm);
 		break;
 	case CREATE_ROOM:
-		handleCreateRoom(rm);
+		//handleCreateRoom(rm);
 		break;
 	case CLOSE_ROOM:
-		handleCloseRoom(rm);
+		//handleCloseRoom(rm);
 		break;
 	case START_GAME:
-		handleStartGame(rm);
+		//handleStartGame(rm);
 		break;
 	case ANS:
-		handlePlayerAnswer(rm);
+		//handlePlayerAnswer(rm);
 		break;
 	case LEAVE_GAME:
-		handleLeaveGame(rm);
+		//handleLeaveGame(rm);
 		break;
 	case BEST_SCORES:
-		handleGetBestScores(rm);
+		//handleGetBestScores(rm);
 		break;
 	case MY_STATUS:
-		handleGetPersonalStatus(rm);
+		//handleGetPersonalStatus(rm);
 		break;
 	case END:
 		safeDeleteUser(rm);
@@ -216,7 +215,6 @@ Room* TriviaServer::getRoomById(int id)
 	}
 }
 
-
 void TriviaServer::safeDeleteUser(RecievedMessage* m)
 {
 	try
@@ -237,29 +235,28 @@ User* TriviaServer::handleSignin(RecievedMessage* m)
 
 	//Checks if the username and password are in the database:
 
-	/*
-	if (DataBase::isUserAndPassMatch(username,password))
+	if (DataBase)
 	{
 		if (this->getUserByName(username))
 		{
 			User* user = new User(username, m->getSock());
 			this->_connectedUsers[m->getSock()] = user; //adds the user to the connected users.
 
-			Helper::sendData(m->getSock(), to_string(RES_SIGN_IN) + "0"); //sends 1020 to client, "Success".
+			Helper::sendData(m->getSock(), RES_SIGN_IN_SUCCESS); //sends 1020 to client, "Success".
 			return user;
 		}
 		else
 		{
-			Helper::sendData(m->getSock(), to_string(RES_SIGN_IN) + "2"); //sends 1022 to client, "User is already connected".
+			Helper::sendData(m->getSock(), RES_SIGN_IN_ALREADY); //sends 1022 to client, "User is already connected".
 			return nullptr;
 		}
 	}
 	else
 	{
-		Helper::sendData(m->getSock(), to_string(RES_SIGN_IN) + "1"); //sends 1021 to client, "Wrong Details".
+		Helper::sendData(m->getSock(),RES_SIGN_IN_WRONG); //sends 1021 to client, "Wrong Details".
 		return nullptr;
 	}
-	*/
+	
 }
 
 bool TriviaServer::handleSignup(RecievedMessage* m)
@@ -268,48 +265,49 @@ bool TriviaServer::handleSignup(RecievedMessage* m)
 	string password = m->getValues()[1];
 	string email = m->getValues()[2];
 
+
 	try
 	{
 		if (Validator::is_pass_valid(password))
 		{
 			if (Validator::is_username_valid(username))
 			{
-				if (1/*!DataBase::is_user_exsits(username))*/)
+				if (!DataBase::is_user_exsits(username)))
 				{
 					bool success = true;//DataBase::add_new_user(username, password, email);
 					if (success)
 					{
-						Helper::sendData(m->getSock(),RES_SIGN_UP_SUC); //sends 1040 to client, "success".
+						Helper::sendData(m->getSock(),RES_SIGN_UP_SUCCESS); //sends 1040 to client, "success".
 						return true;
 					}
 					else
 					{
-						Helper::sendData(m->getSock(),RES_SIGN_UP_FAIL); //sends 1044 to client, "other".
+						Helper::sendData(m->getSock(), RES_SIGN_UP_OTHER); //sends 1044 to client, "other".
 						return false;
 					}
 				}
 				else
 				{
-					Helper::sendData(m->getSock(), RES_SIGN_UP_USERNAME_FAIL); //sends 1043 to client, "Username is illegal".
+					Helper::sendData(m->getSock(), RES_SIGN_UP_USER_ILLEGAL); //sends 1043 to client, "Username is illegal".
 					return false;
 				}
 			}
 			else
 			{
-				Helper::sendData(m->getSock(), RES_SIGN_UP_USERNAME_EXIST); //sends 1042 to client, "Username alreay exists.".
+				Helper::sendData(m->getSock(), RES_SIGN_UP_USER_ALREADY); //sends 1042 to client, "Username alreay exists.".
 				return false;
 			}
 		}
 		else
 		{
-			Helper::sendData(m->getSock(), RES_SIGN_UP_PASS_FAIL); //sends 1041 to client, "password is illegal".
+			Helper::sendData(m->getSock(), RES_SIGN_UP_PASS); //sends 1041 to client, "password is illegal".
 			return false;
 		}
 	}
 	
 	catch (...)
 	{
-		Helper::sendData(m->getSock(),RES_SIGN_UP_FAIL); //sends 1044 to client, "other".
+		Helper::sendData(m->getSock(), RES_SIGN_UP_OTHER); //sends 1044 to client, "other".
 		return false;
 	}			
 }				
@@ -328,6 +326,7 @@ void TriviaServer::handleSignout(RecievedMessage* m)
 	handleLeaveRoom(m);
 	handleLeaveGame(m);
 }
+
 
 void TriviaServer::handleLeaveGame(RecievedMessage* m)
 {
@@ -375,3 +374,4 @@ void TriviaServer::handleGetPersonalStatus(RecievedMessage* m)
 {
 
 }
+*/

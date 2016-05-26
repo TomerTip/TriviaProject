@@ -17,6 +17,7 @@
 #include "Helper.h"
 #include "RecievedMessage.h"
 #include "Protocol.h"
+#include "DataBase.h"
 
 #pragma comment(lib, "ws2_32.lib")
 using namespace std;
@@ -50,13 +51,13 @@ private:
 
 	bool handleCreateRoom(RecievedMessage* m);
 	bool handleCloseRoom(RecievedMessage* m);
-	bool handleJoinRoom(RecievedMessage* m);
-	bool handleLeaveRoom(RecievedMessage* m);
-	void handleGetUsersInRoom(RecievedMessage* m);
-	void handleGetRooms(RecievedMessage* m);
+	//bool handleJoinRoom(RecievedMessage* m);
+	//bool handleLeaveRoom(RecievedMessage* m);
+	//void handleGetUsersInRoom(RecievedMessage* m);
+	//void handleGetRooms(RecievedMessage* m);
 
-	void handleGetBestScores(RecievedMessage* m);
-	void handleGetPersonalStatus(RecievedMessage* m);
+	//void handleGetBestScores(RecievedMessage* m);
+	//void handleGetPersonalStatus(RecievedMessage* m);
 
 	void handleRecievedMessages();
 	void addRecievedMessage(RecievedMessage* m);

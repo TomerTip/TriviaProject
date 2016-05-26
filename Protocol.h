@@ -17,22 +17,35 @@
 #define END 299
 
 //Server side:
-#define RES_SIGN_OUT "102"
-#define RES_SIGN_UP_SUC "1040"
-#define RES_SIGN_UP_FAIL "1044"
-#define RES_SIGN_UP_USERNAME_FAIL "1043"
-#define RES_SIGN_UP_PASS_FAIL "1041"
-#define RES_SIGN_UP_USERNAME_EXIST "1042"
+#define RES_SIGN_IN_SUCCESS "1020"
+#define RES_SIGN_IN_WRONG "1021"
+#define RES_SIGN_IN_ALREADY "1022"
+
+#define RES_SIGN_UP_SUCCESS "1040"
+#define RES_SIGN_UP_PASS "1041"
+#define RES_SIGN_UP_USER_ALREADY "1042"
+#define RES_SIGN_UP_USER_ILLEGAL "1043"
+#define RES_SIGN_UP_OTHER "1044"
+
 #define RES_ROOMS_LIST "106"
+
 #define RES_USERS_LIST "108"
-#define RES_USERS_LIST_FAIL "1080"
-#define RES_JOIN_ROOM "110"
+#define RES_USERS_LIST_NOT_EXIST "1080"
+
+#define RES_JOIN_ROOM "1100"
 #define RES_JOIN_ROOM_FAIL "1101"
-#define RES_LEAVE_ROOM "112"
+#define RES_JOIN_ROOM_OTHER "1102"
+
+#define RES_LEAVE_ROOM "1120"
+
 #define RES_CREATE_ROOM "1140"
 #define RES_CREATE_ROOM_FAIL "1141"
+
 #define RES_CLOSE_ROOM "116"
+
 #define RES_START_GAME "118" //a question with 4 answers. 
+#define RES_START_GAME_FAIL "1180"
+
 #define RES_ANS "120"
 #define RES_GAME_SCORES "121" //The final score of the game, the number of correct answers.
 #define RES_BEST_SCORES "124"
