@@ -46,6 +46,7 @@ void Room::leave_room(User* user){
 	str = get_users_messages_list();
 	sendMessage(user, str);
 }
+
 int Room::close_room(User* user){
 	if (user != _admin){
 		return -1;
@@ -57,9 +58,11 @@ int Room::close_room(User* user){
 	}
 	return 1;
 }
+
 vector<User*> Room::get_users(){
 	return _users;
 }
+
 string Room::get_users_messages_list(){
 	string str;
 	string name;
@@ -77,21 +80,30 @@ string Room::get_users_messages_list(){
 		return str;
 	}
 	else{
-		return RES_USERS_LIST_FAIL;
+		return RES_USERS_LIST_NOT_EXIST;
 	}
 }
+
 int Room::get_id(){
 	return _id;
 }
+
 string Room::get_name(){
 	return _name;
 }
+
 int Room::get_question_no(){
 	return _num_of_question;
 }
+
+int Room::get_question_time(){
+	return this->_time_for_question;
+}
+
 void Room::sendMessage(string str){
 	sendMessage(NULL, str);
 }
+
 void Room::sendMessage(User* user, string str){
 	for (vector<User*>::iterator it = _users.begin(); it != _users.end(); ++it){
 		if (user != *it){

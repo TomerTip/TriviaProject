@@ -21,9 +21,14 @@ bool DataBase::is_user_exits(string name)
 	}
 	return false;
 }
-bool DataBase::add_new_user(string, string, string)
+bool DataBase::add_new_user(string user, string pass, string email)
 {
+	string line = user + ',';
+	line.append(pass + ',');
+	line.append(email);
 
+	this->myfile.write(line.c_str(), line.length());
+	return myfile.bad();
 }
 bool DataBase::is_user_and_pass_match(string user, string pass)
 {
@@ -39,6 +44,9 @@ bool DataBase::is_user_and_pass_match(string user, string pass)
 	return false;
 	
 }
+
+/*
+
 vector<Question*> DataBase::init_question(int)
 {
 
@@ -59,3 +67,4 @@ vector<string> DataBase::get_personal_status()
 {
 
 }
+*/

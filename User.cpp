@@ -42,6 +42,7 @@ bool User::create_room(int room_id, string room_name, int max_users, int questio
 		return false;
 	}
 	Room *room = new Room(room_id, this, room_name, max_users, question_num, question_time);
+	this->_currRoom = room;
 	send(RES_CREATE_ROOM);
 	return true;
 }
@@ -52,7 +53,7 @@ bool User::join_room(Room* newRoom){
 	}
 	else{
 		_currRoom = newRoom;
-
+		send(RES_JOIN_ROOM);
 		return true;
 	}
 }

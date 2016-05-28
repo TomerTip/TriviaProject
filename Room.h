@@ -40,5 +40,6 @@ public:
 	int get_id();
 	string get_name();
 	int get_question_no();
+	int get_question_time();
 
 };

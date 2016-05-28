@@ -2,5 +2,8 @@
 
 int main()
 {
+	TriviaServer server;
+	server.server();
+
 	return 0;
 }

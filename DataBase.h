@@ -15,11 +15,11 @@ public:
 	bool is_user_exits(string);
 	bool add_new_user(string, string, string);
 	bool is_user_and_pass_match(string, string);
-	vector<Question*> init_question(int);
-	vector<string> get_best_scores();
-	bool inset_new_game();
-	bool add_ans_to_player(int, string, int, string, bool, int);
-	vector<string> get_personal_status();
+	//vector<Question*> init_question(int);
+	//vector<string> get_best_scores();
+	//bool inset_new_game();
+	//bool add_ans_to_player(int, string, int, string, bool, int);
+	//vector<string> get_personal_status();
 
 
 

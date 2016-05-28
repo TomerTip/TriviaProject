@@ -17,6 +17,8 @@ public:
 		if (str[0] <= 'Z' && str[0] >= 'A' && str[0] >= 'a' && str[0] <= 'Z'){
 			return true;
 		}
+
+		return false;
 	}
 	static bool is_pass_valid(string str){
 		bool flag1 = false;

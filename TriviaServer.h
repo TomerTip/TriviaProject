@@ -45,16 +45,16 @@ private:
 	bool handleSignup(RecievedMessage* m);
 	void handleSignout(RecievedMessage* m);
 
-	void handleLeaveGame(RecievedMessage* m);
-	void handleStartGame(RecievedMessage* m);
-	void handlePlayerAnswer(RecievedMessage* m);
+	//void handleLeaveGame(RecievedMessage* m);
+	//void handleStartGame(RecievedMessage* m);
+	//void handlePlayerAnswer(RecievedMessage* m);
 
 	bool handleCreateRoom(RecievedMessage* m);
 	bool handleCloseRoom(RecievedMessage* m);
-	//bool handleJoinRoom(RecievedMessage* m);
-	//bool handleLeaveRoom(RecievedMessage* m);
-	//void handleGetUsersInRoom(RecievedMessage* m);
-	//void handleGetRooms(RecievedMessage* m);
+	bool handleJoinRoom(RecievedMessage* m);
+	bool handleLeaveRoom(RecievedMessage* m);
+	void handleGetUsersInRoom(RecievedMessage* m);
+	void handleGetRooms(RecievedMessage* m);
 
 	//void handleGetBestScores(RecievedMessage* m);
 	//void handleGetPersonalStatus(RecievedMessage* m);
@@ -72,12 +72,12 @@ private:
 	SOCKET _socket;
 	map<SOCKET, User*> _connectedUsers;
 	map<int, Room*> _roomsList;
-	//DataBase _db;
+	DataBase _db;
 
 	queue<RecievedMessage*> _queRcvMessages;
 	mutex _mtxRecievedMessages;
 	condition_variable _cv;
 
-	static int _roomIdSequence;
+	 int _roomIdSequence;
 
 };
