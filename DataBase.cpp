@@ -2,7 +2,7 @@
 
 DataBase::DataBase()
 {
-	myfile.open("list.txt");
+	myfile.open("C:\\Users\\User\\Documents\\Magshimim\\'שנה ב\\עקרונות מתקדמים\\סמסטר ב\\Trivia Project!\\Trivia\\Trivia\\list.txt");
 }
 DataBase::~DataBase()
 {

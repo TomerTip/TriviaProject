@@ -78,6 +78,6 @@ private:
 	mutex _mtxRecievedMessages;
 	condition_variable _cv;
 
-	 int _roomIdSequence;
+	 int _roomIdSequence = 1;
 
 };

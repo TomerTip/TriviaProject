@@ -24,9 +24,11 @@ void TriviaServer::bindAndListen()
 	listen(_socket, 20); //supports 20 users.
 	cout << ">> Listening. (Port = 8820)" << endl;
 
+
 	//starts a thread that handles the messages from all of the clients.
 	std::thread t(&TriviaServer::handleRecievedMessages, this); 
 	t.detach(); 
+	
 
 	while (true)
 	{
@@ -49,9 +51,6 @@ void TriviaServer::accept()
 		cout << endl << "Accepted client on port = " << ntohs(client.sin_port) << endl;
 		std::thread t(&TriviaServer::clientHandler, this, client_sock); //creates a thread - for handling client.
 		t.detach(); //works independently.
-
-		thread HandleMessages(&TriviaServer::handleRecievedMessages, this);
-		HandleMessages.detach(); //handles messages independently.
 	}
 	else
 	{
@@ -67,9 +66,9 @@ void TriviaServer::clientHandler(SOCKET s)
 
 	try
 	{
-		while (((code = Helper::getMessageTypeCode(s)) != END) || ((code = Helper::getMessageTypeCode(s)) != 0))
+		while (((code = Helper::getMessageTypeCode(s)) != END))
 		{
-			
+			cout << "you!!!!! soulja! on the house man" << endl;
 			rm = buildRecieveMessage(s, code); //inserts the new message to the queue.
 		}
 
@@ -88,21 +87,18 @@ void TriviaServer::handleRecievedMessages()
 	int code;
 	unique_lock<mutex> ul(this->_mtxRecievedMessages, defer_lock);
 
-	if (this->_queRcvMessages.empty())
-		this->_cv.wait(ul); //waits until the queue is not empty
+	ul.lock();
 
-	this->_mtxRecievedMessages.lock();
+	//waits until the queue is not empty
+	if (this->_queRcvMessages.empty())
+		this->_cv.wait(ul);
+	cout << "You!!! tun tun tun" << endl;
 	//getting the first message in the queue, safely, with locks.
 	RecievedMessage* rm = this->_queRcvMessages.front();
 	this->_queRcvMessages.pop();
-	this->_mtxRecievedMessages.unlock();
-
+	ul.unlock();
 
 	rm->setUser(getUserBySocket(rm->getSock())); //init message's user.
-
-	vector<string> values;
-	string message = Helper::getStringPartFromSocket(rm->getSock(), MAX_LENGTH);
-
 	code = rm->getMessageCode();
 	switch (code)
 	{
@@ -167,8 +163,44 @@ void TriviaServer::addRecievedMessage(RecievedMessage* m)
 
 RecievedMessage* TriviaServer::buildRecieveMessage(SOCKET s, int num)
 {
+	vector<string> values;
+	string message;
+	int size;
+
+	if (num == SIGN_IN){
+		size = Helper::getIntPartFromSocket(s, 2);
+		string userName = Helper::getStringPartFromSocket(s, size);
+		size = Helper::getIntPartFromSocket(s, 2);
+		string pass = Helper::getStringPartFromSocket(s, size);
+		values.push_back(userName);
+		values.push_back(pass);
+	}
+	else if (num == SIGN_UP)
+	{
+		size = Helper::getIntPartFromSocket(s, 2);
+		string userName = Helper::getStringPartFromSocket(s, size);
+		size = Helper::getIntPartFromSocket(s, 2);
+		string pass = Helper::getStringPartFromSocket(s, size);
+		size = Helper::getIntPartFromSocket(s, 2);
+		string email = Helper::getStringPartFromSocket(s, size);
+
+		values.push_back(userName);
+		values.push_back(pass);
+		values.push_back(email);
+	}
+	else if (num == USERS_LIST || num == JOIN_ROOM)
+	{
+		size = Helper::getIntPartFromSocket(s, 4);
+		string id = Helper::getStringPartFromSocket(s, size);
+		values.push_back(id);
+	}
+	else
+	{
+		return nullptr;
+	}
+
 	//builds a receivedMessage.
-	RecievedMessage* m = new RecievedMessage(s, num);
+	RecievedMessage* m = new RecievedMessage(s, num,values);
 	addRecievedMessage(m);
 
 	return m;
@@ -351,13 +383,13 @@ bool TriviaServer::handleCreateRoom(RecievedMessage* m)
 
 	if (m->getUser()) //if a user owns the room:
 	{
-		this->_roomIdSequence++;
 		if (m->getUser()->create_room(this->_roomIdSequence, name, playersNum, questionNum, questionSec))
 		{
 			Room* room = m->getUser()->get_room();
 			pair<int, Room*> p(id, room);
 			this->_roomsList.insert(p); //adds the new room to the room list.
 
+			this->_roomIdSequence++;
 			return true;
 		}
 	}
@@ -370,14 +402,13 @@ bool TriviaServer::handleCloseRoom(RecievedMessage* m)
 	{
 		if (m->getUser()->close_room() != -1)
 		{
-			//this->_roomsList[m->getUser()->get_room()->get_id()];
 			for (map<int, Room*>::iterator it = this->_roomsList.begin(); it != this->_roomsList.end(); it++)
 			{
-				if (it->second == m->getUser()->get_room()) {
+				if (it->second == m->getUser()->get_room()) 
+				{
 					this->_roomsList.erase(it);
 				}
 			}
-
 			return true;
 		}
 	}
