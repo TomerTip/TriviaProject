@@ -68,16 +68,19 @@ void TriviaServer::clientHandler(SOCKET s)
 	{
 		while (((code = Helper::getMessageTypeCode(s)) != END))
 		{
-			cout << "you!!!!! soulja! on the house man" << endl;
+			cout << "message code: " << code << endl;
 			rm = buildRecieveMessage(s, code); //inserts the new message to the queue.
+			addRecievedMessage(rm);
 		}
 
 		rm = buildRecieveMessage(s, END); //creates end connection message, ends thread.
+		addRecievedMessage(rm);
 	}
 	
 	catch (...)
 	{
 		rm = buildRecieveMessage(s, END); 
+		addRecievedMessage(rm);
 	}
 }
 
@@ -87,69 +90,72 @@ void TriviaServer::handleRecievedMessages()
 	int code;
 	unique_lock<mutex> ul(this->_mtxRecievedMessages, defer_lock);
 
-	ul.lock();
-
-	//waits until the queue is not empty
-	if (this->_queRcvMessages.empty())
-		this->_cv.wait(ul);
-	cout << "You!!! tun tun tun" << endl;
-	//getting the first message in the queue, safely, with locks.
-	RecievedMessage* rm = this->_queRcvMessages.front();
-	this->_queRcvMessages.pop();
-	ul.unlock();
-
-	rm->setUser(getUserBySocket(rm->getSock())); //init message's user.
-	code = rm->getMessageCode();
-	switch (code)
+	while (true)
 	{
-	case SIGN_IN:
-		handleSignin(rm);
-		break;
-	case SIGN_OUT:
-		handleSignout(rm);
-		break;
-	case SIGN_UP:
-		handleSignup(rm);
-		break;
-	case ROOMS_LIST:
-		handleGetRooms(rm);
-		break;
-	case USERS_LIST:
-		handleGetUsersInRoom(rm);
-		break;
-	case JOIN_ROOM:
-		handleJoinRoom(rm);
-		break;
-	case LEAVE_ROOM:
-		handleLeaveRoom(rm);
-		break;
-	case CREATE_ROOM:
-		handleCreateRoom(rm);
-		break;
-	case CLOSE_ROOM:
-		handleCloseRoom(rm);
-		break;
-	case START_GAME:
-		//handleStartGame(rm);
-		break;
-	case ANS:
-		//handlePlayerAnswer(rm);
-		break;
-	case LEAVE_GAME:
-		//handleLeaveGame(rm);
-		break;
-	case BEST_SCORES:
-		//handleGetBestScores(rm);
-		break;
-	case MY_STATUS:
-		//handleGetPersonalStatus(rm);
-		break;
-	case END:
-		safeDeleteUser(rm);
-		break;
-	default:
-		safeDeleteUser(rm);
-		break;
+		ul.lock();
+
+		//waits until the queue is not empty
+		if (this->_queRcvMessages.empty())
+			this->_cv.wait(ul);
+		ul.unlock();
+
+		//getting the first message in the queue, safely, with locks.
+		RecievedMessage* rm = this->_queRcvMessages.front();
+		this->_queRcvMessages.pop();
+
+		rm->setUser(getUserBySocket(rm->getSock())); //init message's user.
+		code = rm->getMessageCode();
+		switch (code)
+		{
+		case SIGN_IN:
+			handleSignin(rm);
+			break;
+		case SIGN_OUT:
+			handleSignout(rm);
+			break;
+		case SIGN_UP:
+			handleSignup(rm);
+			break;
+		case ROOMS_LIST:
+			handleGetRooms(rm);
+			break;
+		case USERS_LIST:
+			handleGetUsersInRoom(rm);
+			break;
+		case JOIN_ROOM:
+			handleJoinRoom(rm);
+			break;
+		case LEAVE_ROOM:
+			//handleLeaveRoom(rm);
+			break;
+		case CREATE_ROOM:
+			handleCreateRoom(rm);
+			break;
+		case CLOSE_ROOM:
+			handleCloseRoom(rm);
+			break;
+		case START_GAME:
+			//handleStartGame(rm);
+			break;
+		case ANS:
+			//handlePlayerAnswer(rm);
+			break;
+		case LEAVE_GAME:
+			//handleLeaveGame(rm);
+			break;
+		case BEST_SCORES:
+			//handleGetBestScores(rm);
+			break;
+		case MY_STATUS:
+			//handleGetPersonalStatus(rm);
+			break;
+		case END:
+			safeDeleteUser(rm);
+			break;
+		default:
+			safeDeleteUser(rm);
+			break;
+		}
 	}
 }
 
@@ -194,14 +200,24 @@ RecievedMessage* TriviaServer::buildRecieveMessage(SOCKET s, int num)
 		string id = Helper::getStringPartFromSocket(s, size);
 		values.push_back(id);
 	}
-	else
+	else if (num == CREATE_ROOM)
 	{
-		return nullptr;
+		cout << "aasdf" << endl;
+		size = Helper::getIntPartFromSocket(s, 2);
+		string roomName = Helper::getStringPartFromSocket(s, size);
+
+		string playerNum = Helper::getStringPartFromSocket(s, 1);
+		string qNum = Helper::getStringPartFromSocket(s, 2);
+		string qTime = Helper::getStringPartFromSocket(s, 2);
+
+		values.push_back(roomName);
+		values.push_back(playerNum);
+		values.push_back(qNum);
+		values.push_back(qTime);
 	}
 
 	//builds a receivedMessage.
-	RecievedMessage* m = new RecievedMessage(s, num,values);
-	addRecievedMessage(m);
+	RecievedMessage* m = new RecievedMessage(s, num, values);
 
 	return m;
 }
@@ -223,7 +239,8 @@ User* TriviaServer::getUserBySocket(SOCKET s)
 {
 	try
 	{
-		return this->_connectedUsers.at(s);
+		User* u = this->_connectedUsers[s];
+		return u;
 	}
 	
 	catch (...)
@@ -266,9 +283,9 @@ User* TriviaServer::handleSignin(RecievedMessage* m)
 
 	//Checks if the username and password are in the database:
 
-	if (this->_db.is_user_exits(username))
+	if (true/*this->_db.is_user_exits(username)*/)
 	{
-		if (this->getUserByName(username))
+		if (true/*this->getUserByName(username)*/)
 		{
 			User* user = new User(username, m->getSock());
 			this->_connectedUsers[m->getSock()] = user; //adds the user to the connected users.
@@ -299,14 +316,14 @@ bool TriviaServer::handleSignup(RecievedMessage* m)
 
 	try
 	{
-		if (Validator::is_pass_valid(password))
+		if (true/*Validator::is_pass_valid(password)*/)
 		{
-			if (Validator::is_username_valid(username))
+			if (true/*Validator::is_username_valid(username)*/)
 			{
-				if (!this->_db.is_user_exits(username))
+				if (true/*!this->_db.is_user_exits(username)*/)
 				{
-					bool success = this->_db.add_new_user(username, password, email);
-					if (success)
+					//bool success = this->_db.add_new_user(username, password, email);
+					if (true/*success*/)
 					{
 						Helper::sendData(m->getSock(),RES_SIGN_UP_SUCCESS); //sends 1040 to client, "success".
 						return true;
@@ -383,7 +400,8 @@ bool TriviaServer::handleCreateRoom(RecievedMessage* m)
 
 	if (m->getUser()) //if a user owns the room:
 	{
-		if (m->getUser()->create_room(this->_roomIdSequence, name, playersNum, questionNum, questionSec))
+		bool success = m->getUser()->create_room(this->_roomIdSequence, name, playersNum, questionNum, questionSec);
+		if (success)
 		{
 			Room* room = m->getUser()->get_room();
 			pair<int, Room*> p(id, room);

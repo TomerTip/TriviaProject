@@ -38,9 +38,10 @@ void User::clear_room(){
 
 bool User::create_room(int room_id, string room_name, int max_users, int question_num, int question_time){
 	if (_currRoom){
-		send(RES_CREATE_ROOM_FAIL);
+		this->send(RES_CREATE_ROOM_FAIL);
 		return false;
 	}
+
 	Room *room = new Room(room_id, this, room_name, max_users, question_num, question_time);
 	this->_currRoom = room;
 	send(RES_CREATE_ROOM);
@@ -65,8 +66,15 @@ void User::leave_room(){
 
 int User::close_room(){
 	if (_currRoom) 
-		if (_currRoom->close_room(this) == 1) 
+	
+		if (_currRoom->close_room(this) == 1)
+		{
 			_currRoom = nullptr;
+			this->send(RES_CLOSE_ROOM);
+
+			return 1;
+		}
+			
 	return -1;
 }
 
