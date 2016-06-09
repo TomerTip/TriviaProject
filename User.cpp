@@ -54,7 +54,6 @@ bool User::join_room(Room* newRoom){
 	}
 	else{
 		_currRoom = newRoom;
-		send(RES_JOIN_ROOM);
 		return true;
 	}
 }

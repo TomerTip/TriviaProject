@@ -70,11 +70,12 @@ string Room::get_users_messages_list(){
 	string value_;
 	if (_users.size() > 0){
 		str.append(RES_USERS_LIST);
-		for (vector<User*>::iterator it = _users.begin(); it != _users.end(); ++it){
-			name = (*it)->get_user_name();
+		str.append(to_string(_users.size()));
+		for (int i = 0; i < _users.size(); i++){
+			name = _users[i]->get_user_name();
 			value = name.length();
-			value_ = Helper::getPaddedNumber(value, 2);
-			str.append(value_);
+			str.append(to_string(value));
+			str.append("0");
 			str.append(name);
 		}
 		return str;

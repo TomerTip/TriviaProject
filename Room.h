@@ -31,6 +31,7 @@ public:
 		_max_users = max_users;
 		_time_for_question = question_time;
 		_num_of_question = question_num;
+		_users.push_back(admin);
 	}
 	bool join_room(User* user);
 	void leave_room(User* user);

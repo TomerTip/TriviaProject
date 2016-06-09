@@ -84,7 +84,6 @@ void TriviaServer::clientHandler(SOCKET s)
 	}
 }
 
-
 void TriviaServer::handleRecievedMessages()
 {
 	int code;
@@ -153,7 +152,7 @@ void TriviaServer::handleRecievedMessages()
 			safeDeleteUser(rm);
 			break;
 		default:
-			safeDeleteUser(rm);
+			//safeDeleteUser(rm);
 			break;
 		}
 	}
@@ -196,9 +195,8 @@ RecievedMessage* TriviaServer::buildRecieveMessage(SOCKET s, int num)
 	}
 	else if (num == USERS_LIST || num == JOIN_ROOM)
 	{
-		size = Helper::getIntPartFromSocket(s, 4);
-		string id = Helper::getStringPartFromSocket(s, size);
-		values.push_back(id);
+		int id = Helper::getIntPartFromSocket(s, 4);
+		values.push_back(to_string(id));
 	}
 	else if (num == CREATE_ROOM)
 	{
@@ -362,13 +360,9 @@ bool TriviaServer::handleSignup(RecievedMessage* m)
 
 void TriviaServer::handleSignout(RecievedMessage* m)
 {
-	map<SOCKET, User*>::iterator it;
-	for (it = this->_connectedUsers.begin(); it != this->_connectedUsers.end(); it++)
-	{
-		if (it->second == m->getUser()) {
-			this->_connectedUsers.erase(it);
-		}
-	}
+	this->_mtxRecievedMessages.lock();
+	this->_connectedUsers.erase(_connectedUsers.find(m->getSock()));
+	this->_mtxRecievedMessages.unlock();
 
 	handleCloseRoom(m);
 	handleLeaveRoom(m);
@@ -416,17 +410,15 @@ bool TriviaServer::handleCreateRoom(RecievedMessage* m)
 
 bool TriviaServer::handleCloseRoom(RecievedMessage* m)
 {
+	int id = m->getUser()->get_room()->get_id();
+
 	if (m->getUser()->get_room())
 	{
 		if (m->getUser()->close_room() != -1)
 		{
-			for (map<int, Room*>::iterator it = this->_roomsList.begin(); it != this->_roomsList.end(); it++)
-			{
-				if (it->second == m->getUser()->get_room()) 
-				{
-					this->_roomsList.erase(it);
-				}
-			}
+			this->_mtxRecievedMessages.lock();
+			this->_roomsList.erase(id);
+			this->_mtxRecievedMessages.unlock();
 			return true;
 		}
 	}
@@ -458,8 +450,19 @@ bool TriviaServer::handleJoinRoom(RecievedMessage* m)
 			Room* room = this->_roomsList[id];
 			if (m->getUser()->join_room(room)) //joins the room;
 			{
-				string message = RES_JOIN_ROOM + to_string(room->get_question_no()) + to_string(room->get_question_time());
+				string message = RES_JOIN_ROOM;
+				to_string(room->get_question_no()).size() < 2 ? message.append("0" + to_string(room->get_question_no())) : message.append(to_string(room->get_question_no()));
+				to_string(room->get_question_time()).size() < 2 ? message.append("0" + to_string(room->get_question_time())) : message.append(to_string(room->get_question_time()));
+
 				m->getUser()->send(message);
+				
+				string usersList = m->getUser()->get_room()->get_users_messages_list();
+
+				for (map<SOCKET, User*>::iterator it = this->_connectedUsers.begin(); it != this->_connectedUsers.end(); it++)
+				{
+					it->second->send(usersList);
+				}
+
 				return true;
 			}
 		}
@@ -469,6 +472,7 @@ bool TriviaServer::handleJoinRoom(RecievedMessage* m)
 		}
 	}
 
+	m->getUser()->send(RES_JOIN_ROOM_OTHER);
 	return false;
 }
 
@@ -479,8 +483,8 @@ void TriviaServer::handleGetUsersInRoom(RecievedMessage* m)
 
 	if (r != nullptr)
 	{
-		string message = m->getUser()->get_room()->get_users_messages_list();
-		m->getUser()->send(RES_USERS_LIST + to_string(message.size()) + message);
+		string message = r->get_users_messages_list();
+		m->getUser()->send(message);
 	}
 	else
 	{
@@ -491,10 +495,14 @@ void TriviaServer::handleGetUsersInRoom(RecievedMessage* m)
 
 void TriviaServer::handleGetRooms(RecievedMessage* m)
 {
-	vector<string> rooms;
-
 	string numberOfRooms = to_string(this->_roomsList.size());
 	
+	string s = RES_ROOMS_LIST; 
+
+	int pad = 4 - numberOfRooms.size();
+	for (int i = 0; i < pad; i++) //padding the number of rooms to get 4 bytes.
+		s.append("0");
+	s.append(numberOfRooms);
 
 	for (map<int, Room*>::iterator it = this->_roomsList.begin(); it != this->_roomsList.end(); it++)
 	{
@@ -502,18 +510,17 @@ void TriviaServer::handleGetRooms(RecievedMessage* m)
 		string roomNameSize = to_string(it->second->get_name().size());
 		string roomName = it->second->get_name();
 		
-		string s = id + roomNameSize + roomName;
+		pad = 4 - id.size();
+		for (int i = 0; i < pad; i++) //padding the number of rooms to get 4 bytes.
+			s.append("0");
+		s.append(id);
 
-		rooms.push_back(s);
+		(roomNameSize.size() < 2) ? s.append("0" + roomNameSize) : s.append(roomNameSize); //padding to 2 bytes.
+
+		s.append(roomName);
 	}
 
-	string message = RES_ROOMS_LIST + numberOfRooms;
-	for (int i = 0; i < rooms.size(); i++)
-	{
-		message += rooms[i];
-	}
-
-	m->getUser()->send(message); //sends the list of rooms to the user.
+	m->getUser()->send(s); //sends the list of rooms to the user.
 }
 
 /*
