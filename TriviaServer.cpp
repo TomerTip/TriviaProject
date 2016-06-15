@@ -1,7 +1,5 @@
 #include "TriviaServer.h"
-#include "Validator.h"
-#include "Protocol.h"
-using namespace std;
+
 
 /*Creates a socket for server listening, binds and listens*/
 void TriviaServer::bindAndListen()
@@ -19,10 +17,10 @@ void TriviaServer::bindAndListen()
 
 	int connection;
 	connection = ::bind(_socket, (struct sockaddr*) &serverService, sizeof(serverService)); //binds the socket with the propreties above. Ready to use.
-	cout << ">> Binded." << endl;
+	cout << "Binded." << endl;
 
 	listen(_socket, 20); //supports 20 users.
-	cout << ">> Listening. (Port = 8820)" << endl;
+	cout << "Listening. (Port = 8820)" << endl;
 
 
 	//starts a thread that handles the messages from all of the clients.
@@ -44,11 +42,11 @@ void TriviaServer::accept()
 	int c = sizeof(struct sockaddr_in);
 
 	client_sock = _WINSOCK2API_::accept(this->_socket, (struct sockaddr*)&client, &c); //create connections with the clients.
-	cout << "Accepting Clients." << endl;
+	cout << endl << "Accepting Clients." << endl;
 
 	if (client_sock != INVALID_SOCKET)
 	{
-		cout << endl << "Accepted client on port = " << ntohs(client.sin_port) << endl;
+		cout << "Accepted client on port = " << ntohs(client.sin_port) << endl << endl;
 		std::thread t(&TriviaServer::clientHandler, this, client_sock); //creates a thread - for handling client.
 		t.detach(); //works independently.
 	}
@@ -68,7 +66,6 @@ void TriviaServer::clientHandler(SOCKET s)
 	{
 		while (((code = Helper::getMessageTypeCode(s)) != END))
 		{
-			cout << "message code: " << code << endl;
 			rm = buildRecieveMessage(s, code); //inserts the new message to the queue.
 			addRecievedMessage(rm);
 		}
@@ -108,39 +105,50 @@ void TriviaServer::handleRecievedMessages()
 		{
 		case SIGN_IN:
 			handleSignin(rm);
+			cout << ">> User's Sock = " << rm->getSock() << ": SIGN_IN" << endl;
 			break;
 		case SIGN_OUT:
 			handleSignout(rm);
+			cout << ">> User's Sock = " << rm->getSock() << ": SIGN_OUT" << endl;
 			break;
 		case SIGN_UP:
 			handleSignup(rm);
+			cout << ">> User's Sock = " << rm->getSock() << ": SIGN_UP" << endl;
 			break;
 		case ROOMS_LIST:
 			handleGetRooms(rm);
+			cout << ">> User's Sock = " << rm->getSock() << ": ROOMS_LIST" << endl;
 			break;
 		case USERS_LIST:
 			handleGetUsersInRoom(rm);
+			cout << ">> User's Sock = " << rm->getSock() << ": USERS_LIST" << endl;
 			break;
 		case JOIN_ROOM:
 			handleJoinRoom(rm);
+			cout << ">> User's Sock = " << rm->getSock() << ": JOIN_ROOM" << endl;
 			break;
 		case LEAVE_ROOM:
-			//handleLeaveRoom(rm);
+			handleLeaveRoom(rm);
+			cout << ">> User's Sock = " << rm->getSock() << ": LEAVE_ROOM" << endl;
 			break;
 		case CREATE_ROOM:
 			handleCreateRoom(rm);
+			cout << ">> User's Sock = " << rm->getSock() << ": CREATE_ROOM" << endl;
 			break;
 		case CLOSE_ROOM:
 			handleCloseRoom(rm);
+			cout << ">> User's Sock = " << rm->getSock() << ": CLOSE_ROOM" << endl;
 			break;
 		case START_GAME:
-			//handleStartGame(rm);
+			handleStartGame(rm);
+			cout << ">> User's Sock = " << rm->getSock() << ": START_GAME" << endl;
 			break;
 		case ANS:
 			//handlePlayerAnswer(rm);
 			break;
 		case LEAVE_GAME:
 			//handleLeaveGame(rm);
+			cout << ">> User's Sock = " << rm->getSock() << ": LEAVE_GAME" << endl;
 			break;
 		case BEST_SCORES:
 			//handleGetBestScores(rm);
@@ -150,9 +158,11 @@ void TriviaServer::handleRecievedMessages()
 			break;
 		case END:
 			safeDeleteUser(rm);
+			cout << ">> User's Sock = " << rm->getSock() << ": END" << endl;
 			break;
 		default:
-			//safeDeleteUser(rm);
+			safeDeleteUser(rm);
+			cout << ">> User's Sock = " << rm->getSock() << ": END" << endl;
 			break;
 		}
 	}
@@ -200,7 +210,6 @@ RecievedMessage* TriviaServer::buildRecieveMessage(SOCKET s, int num)
 	}
 	else if (num == CREATE_ROOM)
 	{
-		cout << "aasdf" << endl;
 		size = Helper::getIntPartFromSocket(s, 2);
 		string roomName = Helper::getStringPartFromSocket(s, size);
 
@@ -369,20 +378,38 @@ void TriviaServer::handleSignout(RecievedMessage* m)
 	//handleLeaveGame(m);
 }
 
-/*
 void TriviaServer::handleLeaveGame(RecievedMessage* m)
 {
 
 }
+
 void TriviaServer::handleStartGame(RecievedMessage* m)
 {
+	vector<User*> users = m->getUser()->get_room()->get_users();
+	int qNum = m->getUser()->get_room()->get_question_no();
+
+	try
+	{
+		Game* game = new Game(users, qNum, (DataBase&)this->_db);
+
+		int id = m->getUser()->get_room()->get_id();
+
+		this->_mtxRecievedMessages.lock();
+		this->_roomsList.erase(id);
+		this->_mtxRecievedMessages.unlock();
+
+		game->send_first_question();
+	}
+	catch (...)
+	{
+		m->getUser()->send(RES_START_GAME_FAIL);
+	}
 
 }
 void TriviaServer::handlePlayerAnswer(RecievedMessage* m)
 {
 
 }
-*/
 
 bool TriviaServer::handleCreateRoom(RecievedMessage* m)
 {
@@ -410,10 +437,10 @@ bool TriviaServer::handleCreateRoom(RecievedMessage* m)
 
 bool TriviaServer::handleCloseRoom(RecievedMessage* m)
 {
-	int id = m->getUser()->get_room()->get_id();
-
 	if (m->getUser()->get_room())
 	{
+		int id = m->getUser()->get_room()->get_id();
+
 		if (m->getUser()->close_room() != -1)
 		{
 			this->_mtxRecievedMessages.lock();
@@ -433,6 +460,7 @@ bool TriviaServer::handleLeaveRoom(RecievedMessage* m)
 		if (m->getUser()->get_room())
 		{
 			m->getUser()->leave_room();
+			return true;
 		}
 	}
 
@@ -447,33 +475,28 @@ bool TriviaServer::handleJoinRoom(RecievedMessage* m)
 	{
 		if (this->getRoomById(id))
 		{
-			Room* room = this->_roomsList[id];
-			if (m->getUser()->join_room(room)) //joins the room;
-			{
-				string message = RES_JOIN_ROOM;
-				to_string(room->get_question_no()).size() < 2 ? message.append("0" + to_string(room->get_question_no())) : message.append(to_string(room->get_question_no()));
-				to_string(room->get_question_time()).size() < 2 ? message.append("0" + to_string(room->get_question_time())) : message.append(to_string(room->get_question_time()));
-
-				m->getUser()->send(message);
-				
+			if (m->getUser()->join_room(this->_roomsList[id])) //joins the room;
+			{		
 				string usersList = m->getUser()->get_room()->get_users_messages_list();
 
-				for (map<SOCKET, User*>::iterator it = this->_connectedUsers.begin(); it != this->_connectedUsers.end(); it++)
+				for (unsigned int i = 0; i < this->_roomsList[id]->get_users().size(); i++)
 				{
-					it->second->send(usersList);
+					this->_roomsList[id]->get_users()[i]->send(usersList);
 				}
 
 				return true;
 			}
 		}
-		else
-		{
-			m->getUser()->send(RES_JOIN_ROOM_FAIL);
-		}
+		
+		m->getUser()->send(RES_JOIN_ROOM_FAIL);
+		return false;
 	}
-
-	m->getUser()->send(RES_JOIN_ROOM_OTHER);
-	return false;
+	else
+	{
+		m->getUser()->send(RES_JOIN_ROOM_OTHER);
+		return false;
+	}
+	
 }
 
 void TriviaServer::handleGetUsersInRoom(RecievedMessage* m)

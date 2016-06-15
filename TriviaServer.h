@@ -17,12 +17,14 @@
 #include "Helper.h"
 #include "RecievedMessage.h"
 #include "Protocol.h"
+#include "Game.h"
+#include "Room.h"
+#include "User.h"
 #include "DataBase.h"
+#include "Validator.h"
 
 #pragma comment(lib, "ws2_32.lib")
 using namespace std;
-
-#define MAX_LENGTH 1024
 
 /***********/
 class TriviaServer
@@ -45,9 +47,9 @@ private:
 	bool handleSignup(RecievedMessage* m);
 	void handleSignout(RecievedMessage* m);
 
-	//void handleLeaveGame(RecievedMessage* m);
-	//void handleStartGame(RecievedMessage* m);
-	//void handlePlayerAnswer(RecievedMessage* m);
+	void handleLeaveGame(RecievedMessage* m);
+	void handleStartGame(RecievedMessage* m);
+	void handlePlayerAnswer(RecievedMessage* m);
 
 	bool handleCreateRoom(RecievedMessage* m);
 	bool handleCloseRoom(RecievedMessage* m);
@@ -69,10 +71,11 @@ private:
 
 
 	/********Local Variables**********/
+	DataBase* _db;
 	SOCKET _socket;
 	map<SOCKET, User*> _connectedUsers;
 	map<int, Room*> _roomsList;
-	DataBase _db;
+	
 
 	queue<RecievedMessage*> _queRcvMessages;
 	mutex _mtxRecievedMessages;

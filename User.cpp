@@ -7,9 +7,10 @@
 using namespace std;
 
 
-/*Game *User::get_game(){
+Game *User::get_game()
+{
 	return _currGame;
-}*/
+}
 
 Room *User::get_room(){
 	return _currRoom;
@@ -22,10 +23,14 @@ SOCKET User::get_sock(){
 string User::get_user_name() {
 	return _username;
 }
-/*void User::set_game(Game * gm){
+
+/*
+
+void User::set_game(Game * gm){
 	_currRoom = nullptr;
 	_currGame = gm;
-}*/
+}
+*/
 
 void  User::send(string str){
 	Helper::sendData(this->_sock, str);
@@ -49,18 +54,24 @@ bool User::create_room(int room_id, string room_name, int max_users, int questio
 }
 
 bool User::join_room(Room* newRoom){
-	if (_currRoom){
-		return false;
-	}
-	else{
+
+	if (!_currRoom && newRoom->join_room(this))
+	{
 		_currRoom = newRoom;
 		return true;
 	}
+	else
+		return false;
+	
 }
 
 void User::leave_room(){
-	_currRoom->leave_room(this);
-	_currRoom = nullptr;
+	if (_currRoom)
+	{
+		_currRoom->leave_room(this);
+		_currRoom = nullptr;
+	}
+	
 }
 
 int User::close_room(){

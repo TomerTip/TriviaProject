@@ -23,13 +23,12 @@ bool Room::join_room(User* user){
 		str.append(RES_JOIN_ROOM);
 		str.append(Helper::getPaddedNumber(_num_of_question, 2));
 		str.append(Helper::getPaddedNumber(_time_for_question, 2));
-		(*user).send(str);
-		str2 = get_users_messages_list();
-		sendMessage(str2);
+		user->send(str);
+		
 		return true;
 	}
 	else{
-		(*user).send(RES_JOIN_ROOM_FAIL);
+		user->send(RES_JOIN_ROOM_FAIL);
 		return false;
 	}
 
@@ -37,14 +36,23 @@ bool Room::join_room(User* user){
 
 void Room::leave_room(User* user){
 	string str;
-	int i = 0;
-	for (vector<User*>::iterator it = _users.begin(); it != _users.end(); ++it, i++) {
-		if (user == *it){
+	bool flag = false;
+	
+	for (unsigned int i = 0; i < this->_users.size() && !flag; i++) 
+	{
+		if (this->_users[i] == user)
+		{
 			_users.erase(_users.begin() + i);
+			user->send(RES_LEAVE_ROOM);
+
+			str = get_users_messages_list();
+
+			for (unsigned int j = 0; j < this->_users.size(); j++)
+				sendMessage(_users[j], str);
+			
+			flag = true;
 		}
-	}
-	str = get_users_messages_list();
-	sendMessage(user, str);
+	}	
 }
 
 int Room::close_room(User* user){
@@ -66,23 +74,24 @@ vector<User*> Room::get_users(){
 string Room::get_users_messages_list(){
 	string str;
 	string name;
-	int value;
-	string value_;
+
 	if (_users.size() > 0){
+
 		str.append(RES_USERS_LIST);
 		str.append(to_string(_users.size()));
-		for (int i = 0; i < _users.size(); i++){
+
+		for (unsigned int i = 0; i < _users.size(); i++)
+		{
 			name = _users[i]->get_user_name();
-			value = name.length();
-			str.append(to_string(value));
-			str.append("0");
+
+			str.append(Helper::getPaddedNumber(name.length(),2));
 			str.append(name);
 		}
 		return str;
 	}
-	else{
+	else
 		return RES_USERS_LIST_NOT_EXIST;
-	}
+	
 }
 
 int Room::get_id(){
@@ -106,9 +115,13 @@ void Room::sendMessage(string str){
 }
 
 void Room::sendMessage(User* user, string str){
-	for (vector<User*>::iterator it = _users.begin(); it != _users.end(); ++it){
-		if (user != *it){
-			(*it)->send(str);
+	bool flag = false;
+	for (int i = 0; i < this->_users.size() && !flag; i++)
+	{
+		if (this->_users[i] == user)
+		{
+			this->_users[i]->send(str);
+			flag = true;
 		}
 	}
 }
