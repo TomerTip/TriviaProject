@@ -116,7 +116,7 @@ void Room::sendMessage(string str){
 
 void Room::sendMessage(User* user, string str){
 	bool flag = false;
-	for (int i = 0; i < this->_users.size() && !flag; i++)
+	for (unsigned int i = 0; i < this->_users.size() && !flag; i++)
 	{
 		if (this->_users[i] == user)
 		{

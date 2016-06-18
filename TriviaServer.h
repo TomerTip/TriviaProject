@@ -71,7 +71,7 @@ private:
 
 
 	/********Local Variables**********/
-	DataBase* _db;
+	DataBase* _db = new DataBase();
 	SOCKET _socket;
 	map<SOCKET, User*> _connectedUsers;
 	map<int, Room*> _roomsList;
@@ -81,6 +81,6 @@ private:
 	mutex _mtxRecievedMessages;
 	condition_variable _cv;
 
-	 int _roomIdSequence = 5;
+	 int _roomIdSequence = 1;
 
 };

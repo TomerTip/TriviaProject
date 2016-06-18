@@ -231,12 +231,10 @@ RecievedMessage* TriviaServer::buildRecieveMessage(SOCKET s, int num)
 
 User* TriviaServer::getUserByName(string name)
 {
-	map<SOCKET, User*>::iterator it;
-	for (it = this->_connectedUsers.begin(); it != this->_connectedUsers.end(); it++)
+	for (map<SOCKET, User*>::iterator it = this->_connectedUsers.begin(); it != this->_connectedUsers.end(); it++)
 	{
-		if (it->second->get_user_name() == name) {
+		if (it->second->get_user_name() == name)
 			return it->second;
-		}
 	}
 
 	return nullptr;
@@ -246,7 +244,7 @@ User* TriviaServer::getUserBySocket(SOCKET s)
 {
 	try
 	{
-		User* u = this->_connectedUsers[s];
+		User* u = this->_connectedUsers.at(s);
 		return u;
 	}
 	
@@ -290,9 +288,9 @@ User* TriviaServer::handleSignin(RecievedMessage* m)
 
 	//Checks if the username and password are in the database:
 
-	if (true/*this->_db.is_user_exits(username)*/)
+	if (this->_db->is_user_exists(username))
 	{
-		if (true/*this->getUserByName(username)*/)
+		if (!this->getUserByName(username))
 		{
 			User* user = new User(username, m->getSock());
 			this->_connectedUsers[m->getSock()] = user; //adds the user to the connected users.
@@ -320,17 +318,16 @@ bool TriviaServer::handleSignup(RecievedMessage* m)
 	string password = m->getValues()[1];
 	string email = m->getValues()[2];
 
-
 	try
 	{
-		if (true/*Validator::is_pass_valid(password)*/)
+		if (Validator::is_pass_valid(password))
 		{
-			if (true/*Validator::is_username_valid(username)*/)
+			if (Validator::is_username_valid(username))
 			{
-				if (true/*!this->_db.is_user_exits(username)*/)
+				if (!this->_db->is_user_exists(username))
 				{
-					//bool success = this->_db.add_new_user(username, password, email);
-					if (true/*success*/)
+					bool success = this->_db->add_new_user(username, password, email);
+					if (success)
 					{
 						Helper::sendData(m->getSock(),RES_SIGN_UP_SUCCESS); //sends 1040 to client, "success".
 						return true;
@@ -370,7 +367,8 @@ bool TriviaServer::handleSignup(RecievedMessage* m)
 void TriviaServer::handleSignout(RecievedMessage* m)
 {
 	this->_mtxRecievedMessages.lock();
-	this->_connectedUsers.erase(_connectedUsers.find(m->getSock()));
+	if (_connectedUsers[m->getSock()])
+		this->_connectedUsers.erase(_connectedUsers.find(m->getSock()));
 	this->_mtxRecievedMessages.unlock();
 
 	handleCloseRoom(m);
@@ -406,6 +404,7 @@ void TriviaServer::handleStartGame(RecievedMessage* m)
 	}
 
 }
+
 void TriviaServer::handlePlayerAnswer(RecievedMessage* m)
 {
 
@@ -437,20 +436,30 @@ bool TriviaServer::handleCreateRoom(RecievedMessage* m)
 
 bool TriviaServer::handleCloseRoom(RecievedMessage* m)
 {
-	if (m->getUser()->get_room())
+	try
 	{
-		int id = m->getUser()->get_room()->get_id();
-
-		if (m->getUser()->close_room() != -1)
+		if (m->getUser())
 		{
-			this->_mtxRecievedMessages.lock();
-			this->_roomsList.erase(id);
-			this->_mtxRecievedMessages.unlock();
-			return true;
+			if (m->getUser()->get_room())
+			{
+			int id = m->getUser()->get_room()->get_id();
+	
+				if (m->getUser()->close_room() != -1)
+				{
+					this->_mtxRecievedMessages.lock();
+					this->_roomsList.erase(id);
+					this->_mtxRecievedMessages.unlock();
+					return true;
+				}
+			}
 		}
+		return false;
 	}
-
-	return false;
+	catch (...)
+	{
+		return false;
+	}
+	
 }
 
 bool TriviaServer::handleLeaveRoom(RecievedMessage* m)

@@ -6,15 +6,6 @@ Game::Game(vector<User*>& players, int questionNo, DataBase& db)
 	this->_curret_question_index = questionNo;
 	this->_db = db;
 
-	Question* q = new Question(0, "One", "Two", "Three", "Four", "Five");
-	this->_questions.push_back(q);
-
-	 q = new Question(1, "One1", "Two1", "Three1", "Four1", "Five1");
-	this->_questions.push_back(q);
-
-	 q = new Question(2, "One2", "Two2", "Three2", "Four2", "Five2");
-	this->_questions.push_back(q);
-
 }
 
 void Game::send_question_to_all_users(){
