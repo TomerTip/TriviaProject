@@ -11,7 +11,7 @@ int DataBase::_count;
 
 
 DataBase::DataBase(){
-	rc = sqlite3_open("trivia.db", &db);
+	rc = sqlite3_open("trivia.db",&db);
 	if (rc)
 	{
 		cout << "Can't open database: " << sqlite3_errmsg(db) << endl;
@@ -156,7 +156,7 @@ vector<Question*> DataBase::init_question(int NOQ){
 	return q;
 }
 
-int DataBase::insret_new_game(){
+int DataBase::insert_new_game(){
 	string query = "insert into t_games (status,start_time) values(0,DATETIME(\'now\'));";
 	rc = sqlite3_exec(db, query.c_str(), NULL, 0, &zErrMsg);
 	if (rc != SQLITE_OK)
@@ -182,7 +182,6 @@ int DataBase::insret_new_game(){
 }
 
 /*
-
 bool DataBase::add_ans_to_player(int game_id, string username, int question_id, string player_ans, bool is_correct, int anser_time){
 	
 }

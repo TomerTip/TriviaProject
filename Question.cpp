@@ -5,6 +5,8 @@ Question::Question(int id, string question, string right_ans, string ans2, strin
 {
 	_id = id;
 	srand(time(NULL));
+	this->question = question;
+
 	bool flag;
 	int j;
 	for (int i = 0; i < 4; i++){

@@ -17,7 +17,7 @@ public:
 	bool is_user_and_pass_match(string, string); //done
 	vector<Question*> init_question(int); //done
 	//vector<string> get_best_scores();
-	int insret_new_game();//done
+	int insert_new_game();//done
 	//bool add_ans_to_player(int, string, int, string, bool, int);
 	//vector<string> get_personal_status();
 	int rc;

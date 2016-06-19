@@ -71,7 +71,7 @@ private:
 
 
 	/********Local Variables**********/
-	DataBase* _db = new DataBase();
+	DataBase _db;
 	SOCKET _socket;
 	map<SOCKET, User*> _connectedUsers;
 	map<int, Room*> _roomsList;

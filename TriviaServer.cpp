@@ -222,6 +222,15 @@ RecievedMessage* TriviaServer::buildRecieveMessage(SOCKET s, int num)
 		values.push_back(qNum);
 		values.push_back(qTime);
 	}
+	else if (num == ANS)
+	{
+		string ansNumber = Helper::getStringPartFromSocket(s, 1);
+		string answerTime = Helper::getStringPartFromSocket(s, 2);
+			
+		values.push_back(ansNumber);
+		values.push_back(answerTime);
+	}
+
 
 	//builds a receivedMessage.
 	RecievedMessage* m = new RecievedMessage(s, num, values);
@@ -288,7 +297,7 @@ User* TriviaServer::handleSignin(RecievedMessage* m)
 
 	//Checks if the username and password are in the database:
 
-	if (this->_db->is_user_exists(username))
+	if (this->_db.is_user_exists(username))
 	{
 		if (!this->getUserByName(username))
 		{
@@ -324,9 +333,9 @@ bool TriviaServer::handleSignup(RecievedMessage* m)
 		{
 			if (Validator::is_username_valid(username))
 			{
-				if (!this->_db->is_user_exists(username))
+				if (!this->_db.is_user_exists(username))
 				{
-					bool success = this->_db->add_new_user(username, password, email);
+					bool success = this->_db.add_new_user(username, password, email);
 					if (success)
 					{
 						Helper::sendData(m->getSock(),RES_SIGN_UP_SUCCESS); //sends 1040 to client, "success".
@@ -373,12 +382,23 @@ void TriviaServer::handleSignout(RecievedMessage* m)
 
 	handleCloseRoom(m);
 	handleLeaveRoom(m);
-	//handleLeaveGame(m);
+	handleLeaveGame(m);
 }
 
 void TriviaServer::handleLeaveGame(RecievedMessage* m)
 {
-
+	try
+	{
+		if (m->getUser()->get_game()->leave_game(m->getUser()))
+		{
+			m->getUser()->get_game()->~Game();
+		}
+	}
+	catch (...)
+	{
+		cout << "ERROR: Closing game." << endl;
+	}
+	
 }
 
 void TriviaServer::handleStartGame(RecievedMessage* m)
@@ -388,7 +408,7 @@ void TriviaServer::handleStartGame(RecievedMessage* m)
 
 	try
 	{
-		Game* game = new Game(users, qNum, (DataBase&)this->_db);
+		Game* game = new Game(users, qNum, this->_db);
 
 		int id = m->getUser()->get_room()->get_id();
 
@@ -407,6 +427,23 @@ void TriviaServer::handleStartGame(RecievedMessage* m)
 
 void TriviaServer::handlePlayerAnswer(RecievedMessage* m)
 {
+	if (m->getUser()->get_game())
+	{
+		User* user = m->getUser();
+		int ansNum = stoi(m->getValues()[0]);
+		int ansTime = stoi(m->getValues()[1]);
+
+		user->get_game()->handle_answer_from_user(user, ansNum, ansTime); 
+		
+		/*
+		//if the game is still active, returns true;
+		if (!active) //if the game is not active:
+		{
+
+		}
+		*/
+
+	}
 
 }
 

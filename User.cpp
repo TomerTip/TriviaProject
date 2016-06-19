@@ -24,13 +24,12 @@ string User::get_user_name() {
 	return _username;
 }
 
-/*
 
 void User::set_game(Game * gm){
-	_currRoom = nullptr;
+	this->_currGame = nullptr;
 	_currGame = gm;
 }
-*/
+
 
 void  User::send(string str){
 	Helper::sendData(this->_sock, str);
