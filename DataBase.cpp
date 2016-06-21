@@ -1,8 +1,17 @@
 #include "DataBase.h"
 #include "Question.h"
-DataBase::DataBase(){
-	rc = sqlite3_open("FirstPart.db", &db);
+#include <time.h>
+#include <iostream>
 
+
+Question* DataBase::_question = nullptr;
+string DataBase::_user;
+string DataBase::_pass;
+int DataBase::_count;
+
+
+DataBase::DataBase(){
+	rc = sqlite3_open("trivia.db",&db);
 	if (rc)
 	{
 		cout << "Can't open database: " << sqlite3_errmsg(db) << endl;
@@ -43,18 +52,25 @@ void DataBase::printTable(){
 }
 
 int DataBase::callback_questions(void* notUsed, int argc, char** argv, char** azCol){
-	_question = NEW question(atoi(argv[0]),argv[1],argv[2],argv[3],argv[4],argv[5]);
+	Question* qs = new Question(atoi(argv[0]), argv[1], argv[2], argv[3], argv[4], argv[5]);
+	_question = qs;
 	return 0;
 }
 
 int DataBase::check_user(void* notUsed, int argc, char** argv, char** azCol){_user = argv[0]; return 0;}
 int DataBase::get_pass(void* notUsed, int argc, char** argv, char** azCol){_pass = argv[0]; return 0;}
+int DataBase::callback_count(void* notUsed, int argc, char** argv, char** azCol){ _count = atoi(argv[0]); return 0; }
 
-bool DataBase::is_user_exsits(string name){
 
-	string quarry = "select count(*) from t_users where username = " + '"' + name + '"' + ';';
+bool DataBase::is_user_exists(string name){
+
+	string query = "select count(*) from t_users where username = ";
+	query.append("'");
+	query.append(name);
+	query.append("'");
+	query.append(";");
 	const char* full_Query = query.c_str();
-	rc = sqlite3_exec(db,full_Query, check_user, 0, &zErrMsg);
+	rc = sqlite3_exec(db,full_Query, this->check_user, 0, &zErrMsg);
 	if (rc != SQLITE_OK)
 	{
 		cout << "SQL error: " << zErrMsg << endl;
@@ -72,7 +88,7 @@ bool DataBase::is_user_exsits(string name){
 }
 
 bool DataBase::add_new_user(string name, string pass, string email){
-	string quarry = "insert into t_users values(";
+	string query = "insert into t_users values(";
 	query.append("'");
 	query.append(name);
 	query.append("'");
@@ -95,12 +111,17 @@ bool DataBase::add_new_user(string name, string pass, string email){
 		
 		return false;
 	}
-	return false;
+	return true;
 }
 
 bool DataBase::is_user_and_pass_match(string name , string password){
-	string quarry = "select password from t_users where id = " + name + ";" 
-	const char * full_Query = query.c_str();
+	string query = "select password from t_users where username = ";
+	query.append("'");
+	query.append(name);
+	query.append("'");
+	query.append(";");
+	cout << query << endl;
+	const char* full_Query = query.c_str();
 	rc = sqlite3_exec(db,full_Query,get_pass, 0, &zErrMsg);
 	if (rc != SQLITE_OK)
 	{
@@ -120,10 +141,10 @@ bool DataBase::is_user_and_pass_match(string name , string password){
 
 vector<Question*> DataBase::init_question(int NOQ){
 	vector<Question*> q;
-	string const querry = "select * from t_questions where question_id = ";
+	string const query = "select * from t_questions where question_id = ";
 	string full_Query;
-	for(int i = 0; i <= NOQ ; i++){
-		full_Query = querry + to_string(i) + ';';
+	for(int i = 1; i <= NOQ ; i++){
+		full_Query = query + to_string(i) + ';';
 		rc = sqlite3_exec(db,full_Query.c_str(),callback_questions, 0, &zErrMsg);
 		if (rc != SQLITE_OK)
 		{
@@ -133,4 +154,71 @@ vector<Question*> DataBase::init_question(int NOQ){
 		q.push_back(_question);
 	}
 	return q;
+}
+
+int DataBase::insert_new_game(){
+	string query = "insert into t_games (status,start_time) values(0,DATETIME(\'now\'));";
+	rc = sqlite3_exec(db, query.c_str(), NULL, 0, &zErrMsg);
+	if (rc != SQLITE_OK)
+	{
+		cout << "SQL error: " << zErrMsg << endl;
+		sqlite3_free(zErrMsg);
+
+		return -1;
+	}
+	
+	
+	query = "select last_insert_rowid();";
+	rc = sqlite3_exec(db, query.c_str(), callback_count, 0, &zErrMsg);
+	if (rc != SQLITE_OK)
+	{
+		cout << "SQL error: " << zErrMsg << endl;
+		sqlite3_free(zErrMsg);
+
+		return -1;
+	}
+
+	return _count;
+}
+
+
+bool DataBase::add_ans_to_player(int game_id, string username, int question_id, string player_ans, bool is_correct, int answer_time){
+	string query = "insert into t_players_answers values('";
+	query.append(to_string(game_id));
+	query.append("'");
+	query.append(",");
+	query.append("'");
+	query.append(username);
+	query.append("'");
+	query.append(",");
+	query.append("'");
+	query.append(to_string(question_id));
+	query.append("'");
+	query.append(",");
+	query.append("'");
+	query.append(player_ans);
+	query.append("'");
+	query.append(",");
+	query.append("'");
+	query.append(to_string(is_correct));
+	query.append("'");
+	query.append(",");
+	query.append("'");
+	query.append(to_string(answer_time));
+	query.append("'");
+	rc = sqlite3_exec(db, query.c_str(), NULL, 0, &zErrMsg);
+	if (rc != SQLITE_OK)
+	{
+		cout << "SQL error: " << zErrMsg << endl;
+		sqlite3_free(zErrMsg);
+
+		return false;
+	}
+	return true;
+}
+
+
+DataBase::~DataBase()
+{
+
 }
